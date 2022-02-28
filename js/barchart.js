@@ -8,7 +8,7 @@ Modified: 12/08/21
 
 // Build your bar charts in this file 
 
-
+console.log("hello world")
 // Set dimensions and margins for plots 
 const width = 900; 
 const height = 450; 
@@ -31,7 +31,7 @@ const svg2 = d3
   .append("svg")
   .attr("width", width-margin.left-margin.right)
   .attr("height", height-margin.top - margin.bottom)
-  .attr("viewBox", [0,50,width,height]);
+  .attr("viewBox", [0,0,width,height]);
 
 // Hardcoded barchart data
 const data1 = [
@@ -47,7 +47,82 @@ const data1 = [
 // NEW CODE FOR CSV BARCHART DATA FROM CSV
 const data2 = d3.csv("data/barchart.csv").then((data) => {
 
-  console.log(data);
+  //console.log(data);
+
+// NEW CODE FOR CSV BARCHART find max score
+let maxY2 = d3.max(data, function(d) { return d.score; });
+
+console.log(maxY2);
+
+// NEW CODE FOR CSV BARCHART set y scale
+let yScale2 = d3.scaleLinear()
+              .domain([0,maxY2])
+              .range([height-margin.bottom, margin.top]);
+
+// NEW CODE FOR CSV BARCHART set x scale
+let xScale2 = d3.scaleBand()
+              .domain(d3.range(data.length))
+              .range([margin.left, width - margin.right])
+              .padding(0.1);
+
+
+console.log(xScale2("A"));
+
+// NEW CODE FOR CSV BARCHART adds y axis to svg2
+svg2.append("g")
+    .attr("transform", `translate(${margin.left},0)`)
+    .call(d3.axisLeft(yScale2))
+    .attr("font-size", `20px`);
+
+// NEW CODE FOR CSV BARCHART adds x axis to svg2
+svg2.append("g")
+    .attr("transform", `translate(0,${height - margin.bottom})`)
+    .call(d3.axisBottom(xScale2)
+      .tickFormat(i => data[i].name))
+    .attr("font-size", '20px');
+
+
+// NEW CODE FOR CSV BARCHART creates tooltip
+const tooltip2 = d3.select("#csv-bar")
+                  .append("div")
+                  .attr('id', "tooltip2")
+                  .style("opacity", 0)
+                  .attr("class", "tooltip");
+
+// NEW CODE FOR CSV BARCHART event handler for mousing 
+const mouseover2 = function(event, d){
+  tooltip2.html("Name: " + d.name + "<br> Score: " + d.score + "<br>")
+          .style("opacity", 1);
+}
+
+// NEW CODE FOR CSV BARCHART set position of tooltip
+const mousemove2 = function(event, d){
+  tooltip2.style("left", (event.x)+"px")
+          .style("top", (event.y + yTooltipOffset) + "px");
+}
+
+
+// NEW CODE FOR CSV BARCHART move mouse off bar
+const mouseleave2 = function(event, d){
+  tooltip2.style("opacity", 0);
+}
+
+
+//NEW CODE FOR CSV BARCHART sets everything to svg2
+svg2.selectAll(".bar")
+    .data(data)
+    .enter()
+    .append("rect")
+      .attr("class", "bar")
+      .attr("x", (d,i) => {console.log(d); return xScale2(i);})
+      .attr("y", (d) => yScale2(d.score))
+      .attr("height", (d) => (height - margin.bottom) - yScale2(d.score))
+      .attr("width", xScale2.bandwidth())
+      .on("mouseover", mouseover2)
+      .on("mousemove", mousemove2)
+      .on("mouseleave", mouseleave2);
+
+
 });
 
 /*
@@ -61,9 +136,6 @@ const data2 = d3.csv("data/barchart.csv").then((data) => {
 let maxY1 = d3.max(data1, function(d) { return d.score; });
 
 
-// NEW CODE FOR CSV BARCHART find max score
-let maxY2 = d3.max(data2, function(d) { return d.score; });
-
 // TODO: What does each line of this code do?  --> define scale functions that map
 // data values to pixel values. 1st line - define function, 2nd line - sets domain, 3rd line - sets range 
 // sets up scaling function for y axis
@@ -71,10 +143,6 @@ let yScale1 = d3.scaleLinear()
             .domain([0,maxY1])
             .range([height-margin.bottom,margin.top]); 
 
-// NEW CODE FOR CSV BARCHART set y scale
-let yScale2 = d3.scaleLinear()
-              .domain([0,maxY2])
-              .range([height-margin.bottom, margin.top]);
 
 // TODO: What does each line of this code do? --> splits the range into bands.
 // takes data values and maps them to pixel values for the x axis 
@@ -88,13 +156,6 @@ let xScale1 = d3.scaleBand()
             .padding(0.1); 
 
 
-
-  // NEW CODE FOR CSV BARCHART set x scale
-  let xScale2 = d3.scaleBand()
-              .domain(d3.range(data2.length))
-              .range([margin.left, width - margin.right])
-              .padding(0.1);
-
 // TODO: What does each line of this code do? --> adds y axis to svg1
 // add axis left to page
 svg1.append("g") // g is a placeholder svg, append generic svg to svg1
@@ -105,12 +166,6 @@ svg1.append("g") // g is a placeholder svg, append generic svg to svg1
    // set font size 
    .attr("font-size", '20px'); 
 
-
-// NEW CODE FOR CSV BARCHART adds y axis to svg2
-svg2.append("g")
-    .attr("transform", `translate(${margin.left},0)`)
-    .call(d3.axisLeft(yScale2))
-    .attr("font-size", `20px`);
 
 // TODO: What does each line of this code do? --> adds x axis to svg1
 // g is a placeholder svg, append generic svg to svg1
@@ -124,15 +179,6 @@ svg1.append("g")
             .tickFormat(i => data1[i].name))  
     //sets font size
     .attr("font-size", '20px'); 
-
-
-
-// NEW CODE FOR CSV BARCHART adds x axis to svg2
-svg2.append("g")
-    .attr("transform", `translate(0,${height - margin.bottom})`)
-    .call(d3.axisBottom(xScale2)
-      .tickFormat(i => data2[i].name))
-    .attr("font-size", '20px');
 
 /* 
 
@@ -148,12 +194,6 @@ const tooltip1 = d3.select("#hard-coded-bar")
                 .style("opacity", 0) 
                 .attr("class", "tooltip"); 
 
-// NEW CODE FOR CSV BARCHART creates tooltip
-const tooltip2 = d3.select("#csv-bar")
-                  .append("div")
-                  .attr('id', "tooltip2")
-                  .style("opacity", 0)
-                  .attr("class", "tooltip");
 
 
 // TODO: What does each line of this code do? --> defines event handler for mousing over 
@@ -166,11 +206,6 @@ const mouseover1 = function(event, d) {
 }
 
 
-// NEW CODE FOR CSV BARCHART event handler for mousing 
-const mouseover2 = function(event, d){
-  tooltip2.html("Name: " + d.name + "<br> Score: " + d.score + "<br>")
-          .style("opacity", 1);
-}
 
 // TODO: What does each line of this code do? 
 // set the position to be equal to event x (x value of where mouse is), y event (y value of mouse) + a little offset
@@ -180,12 +215,6 @@ const mousemove1 = function(event, d) {
 }
 
 
-// NEW CODE FOR CSV BARCHART set position of tooltip
-const mousemove2 = function(event, d){
-  tooltip2.style("left", (event.x)+"px")
-          .style("top", (event.y + yTooltipOffset) + "px");
-}
-
 // TODO: What does this code do? 
 // when the mouse leaves a bar, set opacity of tooltip1 back to 0, it dissapears from page
 const mouseleave1 = function(event, d) { 
@@ -193,10 +222,7 @@ const mouseleave1 = function(event, d) {
 }
 
 
-// NEW CODE FOR CSV BARCHART move mouse off bar
-const mouseleave2 = function(event, d){
-  tooltip2.style("opacity", 0);
-}
+
 
 /* 
 
@@ -230,19 +256,7 @@ svg1.selectAll(".bar")
 
 
 
-//NEW CODE FOR CSV BARCHART sets everything to svg2
-svg2.selectAll(".bar")
-    .data(data2)
-    .enter()
-    .append("rect")
-      .attr("class", "bar")
-      .attr("x", (d,i) => xScale2(i))
-      .attr("y", (d) => yScale2(d.score))
-      .attr("height", (d) => (height - margin.bottom) - yScale2(d.score))
-      .attr("width", xScale2.bandwidth())
-      .on("mouseover", mouseover2)
-      .on("mousemove", mousemove2)
-      .on("mouseleave", mouseleave2);
+
 
 
 
